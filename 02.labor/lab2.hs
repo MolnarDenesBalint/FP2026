@@ -24,6 +24,26 @@
   parossz n
         |(n `mod` 10) `mod` 2 == 0 = 1+parossz (n `div`10) 
         | otherwise = parossz (n `div`10 )
+  
+  legnagyobbsz 0 = 0
+  legnagyobbsz n
+        | n `mod`10> legnagyobbsz (n `div` 10) = n `mod` 10
+        | otherwise = (n `mod` 10)
+
+  fugv :: Integral a => a -> a -> a -> Int
+  fugv n b d
+    | n == 0    = if d == 0 then 1 else 0 
+    | n < 0     = fugv (-n) b d           
+    | otherwise = szamol n
+   where
+    szamol 0 = 0
+    szamol x = (if x `rem` b == d then 1 else 0) + szamol (x `div` b)
+
+  fib :: Int -> Integer
+  fib 0 = 0
+  fib 1 = 1
+  fib n = fib (n - 1) + fib (n - 2)
+
 
   main :: IO()
   main = do
@@ -37,4 +57,14 @@
     print (fugv4 125345 5)
     putStrLn("12345 paros szamjegyek szama")
     print (parossz 12345 )
+    putStrLn("123459678 legnagyobb szamjegye")
+    print (legnagyobbsz 1239459678 )
+    putStrLn("7673573 10es szrben a 7 szamjegyek szama")
+    print (fugv 7673573 10 7 )
+    putStrLn("1023 2es szrben a 1 szamjegyek szama")
+    print (fugv 1023 2 1 )
+    putStrLn("10ik fibonacci szam")
+    print (fib 10 )
+    
+
 
