@@ -2,6 +2,9 @@
 
 import Prelude hiding (splitAt, notElem, concat, repeat, replicate, cycle, iterate, any, all,
                        length, sum, elem, reverse, product, maximum, (++), map, filter)
+import Distribution.Simple.Setup (trueArg)
+import GHC.Exts.Heap (GenClosure(key))
+import Data.List ((++))
 
 -- I. Írjuk meg a beépített splitAt, notElem, concat, repeat, replicate, cycle, iterate, any, all függvényeket.
 
@@ -47,43 +50,97 @@ all p (x:xs)
 
 -- - implementálja a length, sum, elem, reverse, product, maximum, insert-sort, ++, map, filter függvényeket,
 
-length xs = foldr (\_ acc -> acc + 1) 0 xs
+myLengthL ls = foldl op 0 ls
+    where
+        op res k = res+1
 
-sum xs = foldl (+) 0 xs
+myLengthR ls = foldr op 0 ls
+    where 
+        op k res = res + 1
 
-elem e xs = foldr (\x acc -> acc || (x == e)) False xs
+mySumL ls = foldl op 0 ls
+    where
+        op res k = res + k
 
-reverse xs = foldl (\acc x -> x : acc) [] xs
+mySumR ls = foldr op 0 ls
+    where
+        op k res = res + k
 
-product xs = foldl (*) 1 xs
+myElemL c ls = foldl (op c) False ls
+    where
+        op c res k
+            | c== k =True
+            |otherwise = res
 
-maximum []     = error "üres lista"
-maximum (x:xs) = foldl max x xs
+myElemR c ls = foldr (op c) False ls
+    where
+        op c k res
+            | c== k =True
+            |otherwise = res
+myReverseL ls = foldl op [] ls
+    where 
+        op res k = k : res
 
-insertSort ls = foldr insert [] ls
-  where
-    insert x []     = [x]
-    insert x (y:ys)
-        | x <= y    = x : y : ys
-        | otherwise = y : insert x ys
+myReverseR ls = foldr op [] ls
+    where 
+        op k res = res ++ [k]
+myProductL ls = foldl op 1 ls
+    where
+        op k res = k*res 
 
-xs ++ ys = foldr (:) ys xs
+myProductR ls = foldr op 1 ls
+    where
+        op res k = k*res 
+myMaximumR ls = foldr op (head ls) ls
+    where
+        op res k 
+            | k>res=k
+            |otherwise = res
 
-map f xs = foldr (\x acc -> f x : acc) [] xs
+myMaximumL ls = foldl op (head ls) ls
+    where
+        op k res
+            | k>res=k
+            |otherwise = res
 
-filter p xs = foldr (\x acc -> if p x then x : acc else acc) [] xs
 
--- - meghatározza egy lista pozitív elemeinek összegét,
+ins :: (Ord a) => a -> [a] -> [a]
+ins x [] = [x]
+ins x (k : ve)
+    | x > k = k : ins x ve
+    | otherwise = x : k : ve
 
-pozitivOsszeg xs = foldr (\x acc -> if x > 0 then x + acc else acc) 0 xs
+myAppend ls1 ls2 = foldr op ls2 ls1
+    where 
+        op k res = k : res
 
--- - egy lista páros elemeinek szorzatát,
+myMap fg ls = foldr (op fg) [] ls
+    where 
+        op fg k res = fg k : res
 
-parosSzorzat xs = foldr (\x acc -> if even x then x * acc else acc) 1 xs
+
+myFilter fg ls = foldr (op fg) [] ls
+    where
+        op fg k res
+            | fg k == True = k : res
+            | otherwise = res
+
+mySumPos ls = foldl op 0
+    where 
+        op res k
+            | k > 0 = res + k
+            | otherwise = res
+
+
+myProduct ls = foldl op 1 ls
+    where 
+        op res k 
+            -- | mod k 2 == 0 = res * k
+            | even k = res * k
+            | otherwise = res
 
 -- - n-ig a négyzetszámokat.
 
-negyzetek n = map (\x -> x * x) [1 .. n]
 
 -- - meghatározza a $$P(x) = a_0 + a_1 x + a_2 x^2 + \ldots + a_n x^n$$ polinom adott $x_0$ értékre való behelyettesítési értékét: $$a_0 + x_0(a_1 + x_0(a_2 + x_0(a_3 + \ldots + x_0(a_{n-1}+ x_0 \cdot a_n))))$$
 
@@ -122,3 +179,13 @@ polinom coeffs x0 = foldl (\acc a -> acc * x0 + a) 0 coeffs
 --   zsuzsa 7.466666666666666
 --   levi 8.875
 --   ```
+-- legrovidebbek [] = []
+-- legrovidebbek xs = [s | s <- xs, length s == minHossz]
+--   where
+--     minHossz = minimum (map length xs)
+-- talalat x xs = [i | (i, e) <- zip [0..] xs, e == x]
+-- osszegT xs = sum [n | (_, n) <- xs]
+-- atlagTu xs = mapM_ kiir xs
+--   where
+--     kiir (nev, szamok) = putStrLn (nev ++ " " ++ show (atlag szamok))
+--     atlag ys = sum ys / fromIntegral (length ys)
